@@ -1,0 +1,6 @@
+venv/*
+Planos-craneales-prenatales-3/*
+test_dataset/*
+backup_dataset/*
+augmented_dataset/*
+__pycache__/*
