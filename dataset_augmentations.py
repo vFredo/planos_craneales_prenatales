@@ -20,35 +20,25 @@ def bbox_to_yolo(bbox, img_width, img_height):
 
 # Define augmentation pipeline
 seq = iaa.Sequential([
-    # Strengthen or weaken the contrast in each image.
-    # iaa.LinearContrast((0.75, 1.25)),
-    # n of the pixels in an image with salt and pepper noise
-    iaa.SaltAndPepper(0.01),
-    # make some images brighter or darker in 20% of all cases
-    iaa.Multiply((0.8, 1.2), per_channel=0.2),
-    # Scale/zoom them, translate/move them and rotate them
-    iaa.Affine(
-        scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
-        translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
-        rotate=(-25, 25),
-    )
-], random_order=True)
-
-augmentation_pipeline = iaa.Sequential([
-    # Flip: Horizontal, Vertical
-    iaa.Fliplr(0.5),  # 50% chance of horizontal flip
-    iaa.Flipud(0.5),  # 50% chance of vertical flip
+    # Flip: Horizontal, Vertical (already have 50% chance)
+    iaa.Fliplr(0.5),
+    iaa.Flipud(0.5),
+    # 0 to n of the pixels in an image with salt and pepper noise
+    iaa.SaltAndPepper((0, 0.0022)),
     # 90° Rotate: Clockwise, Counter-Clockwise, Upside Down
-    iaa.Rotate([0, 90, 180, 270]),  # Random rotation by 0, 90, 180, or 270 degrees
+    iaa.Sometimes(0.4, iaa.Rotate([0, 90, 180, 270])),
     # Crop: 0% Minimum Zoom, 30% Maximum Zoom
-    iaa.Crop(percent=(0, 0.3)),
+    iaa.Sometimes(0.3, iaa.Crop(percent=(0, 0.3))),
     # Brightness: Between -15% and +15%
-    # iaa.Multiply((0.85, 1.15)),  # Multiply pixel values by a factor between 0.85 and 1.15
+    iaa.Sometimes(0.4, iaa.Multiply((0.85, 1.15))),
     # Blur: Up to 2.5px
-    iaa.GaussianBlur(sigma=(0, 2.5)),  # Apply Gaussian blur with sigma between 0 and 2.5
-    # Noise: Up to 0.22% of pixels
-    # iaa.AdditiveGaussianNoise(scale=(0, 0.0022 * 255))
-    iaa.AdditiveGaussianNoise(scale=(0, 0.0012 * 255))
+    iaa.Sometimes(0.4, iaa.GaussianBlur(sigma=(0, 2.5))),
+    # Traslation: 20% of the width and 20% of the height from the middle point
+    iaa.Sometimes(0.4, iaa.Affine(
+        translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
+        mode='constant',
+        cval=0
+    )),
 ])
 
 image_dir = './backup_dataset/images'

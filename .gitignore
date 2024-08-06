@@ -5,3 +5,4 @@ backup_dataset/*
 augmented_dataset/*
 __pycache__/*
 label_correctness/*
+*.env

@@ -1,12 +1,11 @@
 import cv2
 import os
 import numpy as np
-import random
 
-def plot_one_box(x, img, color=None, label=None, line_thickness=None):
+
+def plot_one_box(x, img, color, label=None, line_thickness=None):
     # Plots one bounding box on image img
     tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
-    color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
     if label:
@@ -37,17 +36,23 @@ def draw_labels_on_image(image_path, label_path, output_path, class_names):
         y2 = int((y_center + h/2) * height)
 
         # Draw bounding box
-        label = f"{class_names[class_id]}"
-        plot_one_box([x1, y1, x2, y2], img, label=label)
+        label = class_names[class_id]
+        color = COLOR_MAP[label]
+        plot_one_box([x1, y1, x2, y2], img, color=color, label=label)
 
     # Save the image with drawn bounding boxes
     cv2.imwrite(output_path, img)
 
-# Example usage
 image_folder = 'augmented_dataset/images'
 label_folder = 'augmented_dataset/labels'
 output_folder = 'label_correctness'
 class_names = ["trans_cerebellum", "trans_thalamic", "trans_ventricular"]
+# Define a color map for each class
+COLOR_MAP = {
+    "trans_cerebellum": (255, 0, 0),
+    "trans_thalamic": (0, 255, 0),
+    "trans_ventricular": (0, 0, 255)
+}
 
 # Ensure output folder exists
 os.makedirs(output_folder, exist_ok=True)
