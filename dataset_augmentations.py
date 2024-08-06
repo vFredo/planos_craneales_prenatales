@@ -21,7 +21,7 @@ def bbox_to_yolo(bbox, img_width, img_height):
 # Define augmentation pipeline
 seq = iaa.Sequential([
     # Strengthen or weaken the contrast in each image.
-    iaa.LinearContrast((0.75, 1.25)),
+    # iaa.LinearContrast((0.75, 1.25)),
     # n of the pixels in an image with salt and pepper noise
     iaa.SaltAndPepper(0.01),
     # make some images brighter or darker in 20% of all cases
@@ -33,6 +33,23 @@ seq = iaa.Sequential([
         rotate=(-25, 25),
     )
 ], random_order=True)
+
+augmentation_pipeline = iaa.Sequential([
+    # Flip: Horizontal, Vertical
+    iaa.Fliplr(0.5),  # 50% chance of horizontal flip
+    iaa.Flipud(0.5),  # 50% chance of vertical flip
+    # 90° Rotate: Clockwise, Counter-Clockwise, Upside Down
+    iaa.Rotate([0, 90, 180, 270]),  # Random rotation by 0, 90, 180, or 270 degrees
+    # Crop: 0% Minimum Zoom, 30% Maximum Zoom
+    iaa.Crop(percent=(0, 0.3)),
+    # Brightness: Between -15% and +15%
+    # iaa.Multiply((0.85, 1.15)),  # Multiply pixel values by a factor between 0.85 and 1.15
+    # Blur: Up to 2.5px
+    iaa.GaussianBlur(sigma=(0, 2.5)),  # Apply Gaussian blur with sigma between 0 and 2.5
+    # Noise: Up to 0.22% of pixels
+    # iaa.AdditiveGaussianNoise(scale=(0, 0.0022 * 255))
+    iaa.AdditiveGaussianNoise(scale=(0, 0.0012 * 255))
+])
 
 image_dir = './backup_dataset/images'
 label_dir = './backup_dataset/labels'
@@ -64,25 +81,27 @@ for img_file in os.listdir(image_dir):
         # Apply augmentations
         for i in range(num_augmentations):
             aug_image, aug_bbs = seq(image=image, bounding_boxes=bbs)
-            
+
             for bbox in aug_bbs.bounding_boxes:
                 # Check if the bounding box is valid in reference of the size of the image
                 if (0 <= bbox.x1 < aug_image.shape[1] and 0 <= bbox.x2 < aug_image.shape[1]
                     and 0 <= bbox.y1 < aug_image.shape[0] and 0 <= bbox.y2 < aug_image.shape[0]):
-                    
+
                     # Generate filenames
                     aug_img_file = f"{os.path.splitext(img_file)[0]}_aug{i+1}.jpg"
                     aug_label_file = f"{os.path.splitext(img_file)[0]}_aug{i+1}.txt"
-                    
+
+                    print(f"Image {aug_img_file} generated.")
+
                     # Save augmented image
                     cv2.imwrite(os.path.join(output_dir, 'images', aug_img_file),
                                 cv2.cvtColor(aug_image, cv2.COLOR_RGB2BGR))
-                    
+
                     # Save label file
                     with open(os.path.join(output_dir, 'labels', aug_label_file), 'w') as f:
                         yolo_ann = bbox_to_yolo(bbox, aug_image.shape[1], aug_image.shape[0])
                         f.write(yolo_ann + '\n')
-                    
+
                     valid_count += 1
 
 print("Augmentation completed.")
