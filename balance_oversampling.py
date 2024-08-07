@@ -135,4 +135,9 @@ def balance_dataset(root_dir, output_dir, num_augmentations):
         valid_count = make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir, output_dir, class_images)
         print(f" <-- {valid_count} total valid augmented images and labels created for '{name}'")
 
-balance_dataset("./backup_dataset", './augmented_dataset', 10)
+    print("Total for each class")
+    images_output_dir = os.path.join(output_dir, "images")
+    labels_output_dir = os.path.join(output_dir, "labels")
+    min_size, class_images = min_class_elements(images_output_dir, labels_output_dir)
+
+balance_dataset("backup_dataset", 'augmented_dataset', 10)

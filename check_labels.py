@@ -1,7 +1,13 @@
 import cv2
 import os
-import numpy as np
 
+# Define a color map for each class
+class_names = ["trans_cerebellum", "trans_thalamic", "trans_ventricular"]
+COLOR_MAP = {
+    "trans_cerebellum": (255, 0, 0),
+    "trans_thalamic": (255, 100, 255),
+    "trans_ventricular": (0, 0, 255)
+}
 
 def plot_one_box(x, img, color, label=None, line_thickness=None):
     # Plots one bounding box on image img
@@ -43,29 +49,25 @@ def draw_labels_on_image(image_path, label_path, output_path, class_names):
     # Save the image with drawn bounding boxes
     cv2.imwrite(output_path, img)
 
-image_folder = 'augmented_dataset/images'
-label_folder = 'augmented_dataset/labels'
-output_folder = 'label_correctness'
-class_names = ["trans_cerebellum", "trans_thalamic", "trans_ventricular"]
-# Define a color map for each class
-COLOR_MAP = {
-    "trans_cerebellum": (255, 0, 0),
-    "trans_thalamic": (0, 255, 0),
-    "trans_ventricular": (0, 0, 255)
-}
+def create_label_images(root_folder, output_folder):
+    image_folder = os.path.join(root_folder, 'images')
+    label_folder = os.path.join(root_folder, 'labels')
 
-# Ensure output folder exists
-os.makedirs(output_folder, exist_ok=True)
+    # Ensure output folder exists
+    os.makedirs(output_folder, exist_ok=True)
 
-# Process all images in the folder
-for filename in os.listdir(image_folder):
-    if filename.endswith(('.jpg', '.jpeg', '.png')):
-        image_path = os.path.join(image_folder, filename)
-        label_path = os.path.join(label_folder, filename.rsplit('.', 1)[0] + '.txt')
-        output_path = os.path.join(output_folder, filename)
+    # Process all images in the folder
+    for filename in os.listdir(image_folder):
+        if filename.endswith(('.jpg', '.jpeg', '.png')):
+            image_path = os.path.join(image_folder, filename)
+            label_path = os.path.join(label_folder, filename.rsplit('.', 1)[0] + '.txt')
+            output_path = os.path.join(output_folder, filename)
 
-        if os.path.exists(label_path):
-            draw_labels_on_image(image_path, label_path, output_path, class_names)
-            print(f"Processed: {filename}")
-        else:
-            print(f"Label file not found for: {filename}")
+            if os.path.exists(label_path):
+                draw_labels_on_image(image_path, label_path, output_path, class_names)
+                print(f"Processed: {filename}")
+            else:
+                print(f"Label file not found for: {filename}")
+
+
+create_label_images("augmented_dataset", "labeled_images")

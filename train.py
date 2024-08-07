@@ -1,5 +1,9 @@
+import os
 import torch
 from ultralytics import YOLO
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Check if CUDA (GPU) is available
 if torch.cuda.is_available():
@@ -13,4 +17,5 @@ else:
 model = YOLO("yolov8n.yaml")
 
 # Train the model
-results = model.train(data='Planos-craneales-prenatales-2/data.yaml', epochs=1, imgsz=640, device=device)
+data_file = f'{os.getenv('DATASET')}/data.yaml'
+results = model.train(data=data_file, epochs=100, imgsz=640, device=device)
