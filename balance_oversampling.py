@@ -71,9 +71,9 @@ def make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir
     valid_count = 0
     size_class = len(class_images[name])
     limit_augmentations = 0 if max_limit - size_class < 0 else max_limit - size_class
+    print("--> class:", name ,"limit:", limit_augmentations)
 
     for img_file in class_images[name]:
-
         if limit_augmentations == 0:
             break
 
@@ -91,7 +91,8 @@ def make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir
         bbs = BoundingBoxesOnImage([bbox], shape=image.shape)
 
         i = 0
-        while i < num_augmentations and limit_augmentations > 0:
+        tries = 0
+        while i < num_augmentations and limit_augmentations > 0 and tries <= 15:
             aug_image, aug_bbs = seq(image=image, bounding_boxes=bbs)
             bbox = aug_bbs.bounding_boxes[0]
 
@@ -99,8 +100,8 @@ def make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir
             if (0 <= bbox.x1 < aug_image.shape[1] and 0 <= bbox.x2 < aug_image.shape[1]
                 and 0 <= bbox.y1 < aug_image.shape[0] and 0 <= bbox.y2 < aug_image.shape[0]):
                 # Generate filenames
-                aug_img_file = f"{img_file}_aug{i+1}.jpg"
-                aug_label_file = f"{label_file}_aug{i+1}.txt"
+                aug_img_file = f"{img_file[0:-4]}_aug{i+1}.jpg"
+                aug_label_file = f"{label_file[0:-4]}_aug{i+1}.txt"
 
                 # Save augmented image
                 cv2.imwrite(os.path.join(output_dir, 'images', aug_img_file),
@@ -114,6 +115,8 @@ def make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir
                 limit_augmentations -= 1
                 valid_count += 1
                 i += 1
+            else:
+                tries += 1
 
     return valid_count
 
@@ -126,9 +129,10 @@ def balance_dataset(root_dir, output_dir, num_augmentations):
     labels_dir = os.path.join(root_dir, "labels")
     min_size, class_images = min_class_elements(images_dir, labels_dir)
     max_limit = (min_size * num_augmentations) + min_size
+    print("max_limit:", max_limit)
 
     for name in class_images:
         valid_count = make_augmentation(name, max_limit, num_augmentations, images_dir, labels_dir, output_dir, class_images)
-        print(f" --> {valid_count} total valid augmented images and labels created for '{name}'")
+        print(f" <-- {valid_count} total valid augmented images and labels created for '{name}'")
 
-balance_dataset("./backup_dataset", './overfitting_dataset', 10)
+balance_dataset("./backup_dataset", './augmented_dataset', 10)

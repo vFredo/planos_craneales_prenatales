@@ -1,8 +1,6 @@
 venv/*
-Planos-craneales-prenatales-3/*
-test_dataset/*
-backup_dataset/*
-augmented_dataset/*
+Planos-craneales-prenatales-*/*
+*_dataset/*
 __pycache__/*
 label_correctness/*
 *.env
